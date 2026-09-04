@@ -1,0 +1,1 @@
+print(*sorted(x for i, x in enumerate(map(int, input().split()), 1) if i % 6 == 0 and x % 6 == 0))

@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update, delete
 from sqlalchemy.orm import Session
 
 from models import Review
@@ -39,3 +39,26 @@ class ReviewManager:
         ).group_by(Review.user_id)
         return self.session.execute(stmt).all()
 
+    def update(self, review_id: int, update_data: dict) -> Review:
+        review = self.session.get(Review, review_id)
+
+        if review is None:
+            return None
+
+        if "comment" in update_data:
+            review.comment = update_data["comment"]
+
+        if "rating" in update_data:
+            review.rating = update_data["rating"]
+
+        self.session.commit()
+        return review
+
+    def delete(self, review_id: int) -> bool:
+        review = self.session.get(Review, review_id)
+        if review:
+            self.session.delete(review)
+            self.session.commit()
+            return True
+        else:
+            return False

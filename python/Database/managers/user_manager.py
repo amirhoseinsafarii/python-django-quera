@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update, delete
 from sqlalchemy.orm import Session
 
 from models import Review, User
@@ -34,3 +34,35 @@ class UserManager:
                 ).limit(limit)
             )
         return self.session.execute(stmt).all()
+
+    def update(self, user_id: int, update_data: dict) -> User | None:
+        user = self.session.get(User, user_id)
+
+        if user is None:
+            return None
+
+        if "name" in update_data:
+            user.name = update_data["name"]
+
+        if "email" in update_data:
+            user.email = update_data["email"]
+
+        if "is_verified" in update_data:
+            user.is_verified = update_data["is_verified"]
+
+        self.session.commit()
+        return user
+
+    def delete(self, user_id: int) -> bool:
+        user = self.session.get(User, user_id)
+        if user:
+            self.session.delete(user)
+            self.session.commit()
+            return True
+        else:
+            return False
+
+    def verify_user(self, user_id: int) -> User:
+        stmt = update(User).where(User.id==user_id).values(is_verified=True).returning(User)
+        result = self.session.execute(stmt)
+        return result.scalar_one_or_none()
